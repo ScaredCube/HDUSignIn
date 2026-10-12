@@ -3,6 +3,7 @@
 .build-cache/
 .kotlin/
 **/build/
+release/
 
 # IntelliJ / Android Studio
 .idea/
