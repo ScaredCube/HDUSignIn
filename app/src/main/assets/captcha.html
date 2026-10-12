@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<style>
+body{margin:0;padding:24px;font-family:system-ui,sans-serif;background:#fff;color:#25382f;text-align:center}
+p{font-size:14px;line-height:1.7;color:#52665c}button{border:0;border-radius:24px;padding:14px 24px;background:#336b58;color:white;font:500 15px system-ui}
+#captcha{min-height:40px}#status{min-height:48px;margin:20px 0}
+</style>
+<script>window.AliyunCaptchaConfig={region:'cn',prefix:'cr5a57'};</script>
+<script src="https://o.alicdn.com/captcha-frontend/aliyunCaptcha/AliyunCaptcha.js" onerror="NativeCaptcha.failed('无法加载官方验证码，请检查网络')"></script>
+</head><body><p>请完成本账号的安全验证</p><div id="captcha"></div><p id="status">正在加载官方验证码…</p>
+<button id="verify" type="button">打开验证码</button>
+<script>
+(function(){
+  let resolveBusiness=null,submitted=false;
+  window.completeNativeCaptcha=function(captchaPassed,businessPassed){
+    document.getElementById('status').textContent=businessPassed?'签到成功':'本次处理完成';
+    if(resolveBusiness){resolveBusiness({captchaResult:!!captchaPassed,bizResult:!!businessPassed});resolveBusiness=null;}
+  };
+  const timeout=setTimeout(function(){NativeCaptcha.failed('官方验证码初始化超时');},15000);
+  try {
+    if(!window.initAliyunCaptcha)throw new Error('官方验证码 SDK 不可用');
+    window.initAliyunCaptcha({
+      SceneId:'2q42bw25',prefix:'cr5a57',mode:'popup',element:'#captcha',button:'#verify',language:'cn',
+      slideStyle:{width:320,height:40},
+      getInstance:function(){clearTimeout(timeout);document.getElementById('status').textContent='请完成弹出的验证码';setTimeout(function(){document.getElementById('verify').click();},180);},
+      captchaVerifyCallback:function(parameter){
+        if(submitted)return Promise.resolve({captchaResult:false,bizResult:false});
+        submitted=true;
+        document.getElementById('status').textContent='正在向上课啦提交签到，请稍候…';
+        document.getElementById('verify').disabled=true;
+        return new Promise(function(resolve){resolveBusiness=resolve;NativeCaptcha.submit(String(parameter),navigator.userAgent);});
+      },
+      onBizResultCallback:function(){},
+      onError:function(){clearTimeout(timeout);NativeCaptcha.failed('验证码加载失败，请检查网络后重新签到');}
+    });
+  }catch(e){clearTimeout(timeout);NativeCaptcha.failed('验证码初始化失败');}
+})();
+</script></body></html>
